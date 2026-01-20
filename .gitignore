@@ -1,6 +1,4 @@
 # Binaries
-/producer/producer
-/consumer-forwarder/consumer-forwarder
 tmp/
 *.log
 
