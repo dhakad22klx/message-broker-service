@@ -1,6 +1,9 @@
+version: '3.8'
+
 services:
   caddy:
     image: caddy:latest
+    container_name: caddy-proxy
     ports:
       - "80:80"
       - "443:443"
@@ -11,7 +14,9 @@ services:
     restart: always
 
   kafka:
-    image: bitnamilegacy/kafka:3.9.0.
+    # Using the standard Bitnami image for KRaft mode stability
+    image: bitnami/kafka:3.9.0
+    container_name: kafka
     environment:
       - KAFKA_CFG_NODE_ID=1
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
@@ -19,21 +24,31 @@ services:
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      # Essential for single-node production to avoid startup errors
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
     volumes:
       - kafka_data:/bitnami/kafka/data
     restart: always
 
   producer:
     build: ./producer
-    env_file: 
-      - .env
+    container_name: whatsapp-message-producer
+    env_file: .env
+    depends_on:
+      - kafka
     restart: always
 
   consumer:
     build: ./consumer
-    env_file:
-      - .env
+    container_name: whatsapp-message-consumer
+    env_file: .env
+    depends_on:
+      - kafka
     restart: always
+
 volumes:
   caddy_data:
   caddy_config:
