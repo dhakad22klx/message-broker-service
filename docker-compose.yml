@@ -14,28 +14,35 @@ services:
     restart: always
 
   kafka:
-    # Using the standard Bitnami image for KRaft mode stability
-    image: bitnami/kafka:3.9.0
+    image: apache/kafka:latest
     container_name: kafka
     environment:
-      - KAFKA_CFG_NODE_ID=1
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      # Essential for single-node production to avoid startup errors
-      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
+      # KRaft basic settings
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      
+      # Cluster ID is required for official image in KRaft mode
+      # You can generate a random one or use this static one for now
+      - KAFKA_CLUSTER_ID=qtU4e98fTBeAb6qH-88Y20
+      
+      # Single-node optimizations
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      - KAFKA_LOG_RETENTION_HOURS=24
     volumes:
-      - kafka_data:/bitnami/kafka/data
+      - kafka_data:/var/lib/kafka/data
     restart: always
 
   producer:
     build: ./producer
-    container_name: whatsapp-message-producer
+    container_name: whatsapp-msg-producer
     env_file: .env
     depends_on:
       - kafka
@@ -43,7 +50,7 @@ services:
 
   consumer:
     build: ./consumer
-    container_name: whatsapp-message-consumer
+    container_name: whatsapp-msg-consumer
     env_file: .env
     depends_on:
       - kafka
