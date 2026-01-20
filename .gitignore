@@ -1,0 +1,13 @@
+# Binaries
+/producer/producer
+/consumer-forwarder/consumer-forwarder
+tmp/
+*.log
+
+# Docker data
+kafka-persistence/
+caddy_data/
+caddy_config/
+
+# Environment
+.env
