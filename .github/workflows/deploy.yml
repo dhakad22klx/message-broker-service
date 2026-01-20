@@ -7,16 +7,24 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # ✅ Write SSH private key to a file (fixes "ssh: no key found")
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY_ED255_A }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
       - name: Copy files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
-          key: ${{ secrets.EC2_SSH_KEY_ED255_A }}
+          key_path: ~/.ssh/id_ed25519
           source: "."
           target: "/home/ubuntu/whatsapp-bot"
 
@@ -25,12 +33,13 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
-          key: ${{ secrets.EC2_SSH_KEY_ED255_A }}
+          key_path: ~/.ssh/id_ed25519
           script: |
             cd /home/ubuntu/whatsapp-bot
-            # Inject secrets into a temporary .env file for Docker
+
+            # Inject secrets into .env
             echo "FASTAPI_URL=${{ secrets.FASTAPI_URL }}" > .env
             echo "VERIFY_TOKEN=${{ secrets.VERIFY_TOKEN }}" >> .env
             echo "KAFKA_BROKER=kafka:9092" >> .env
-            
-            sudo docker-compose up -d --build
+
+            sudo docker compose up -d --build
