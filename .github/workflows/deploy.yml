@@ -21,12 +21,12 @@ jobs:
                 source: "."
                 target: "/home/ubuntu/whatsapp-bot"
 
-            - name: Deploy with Docker Compose
-              uses: appleboy/ssh-action@v1.2.0 # Updated from v1.0.3
-              with:
-                host: ${{ secrets.HOST }}
-                username: ${{ secrets.USER }}
-                key: ${{ secrets.EC2_SSH_KEY_ED255_A }}
+      - name: Deploy with Docker Compose
+        uses: appleboy/ssh-action@v1.2.0 # Updated from v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.EC2_SSH_KEY_ED255_A }}
           script: |
             cd /home/ubuntu/whatsapp-bot
 
