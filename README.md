@@ -107,4 +107,6 @@ To maintain the correct order of messages for each user while processing them in
 * **Ordering:** Since messages from the same phone number (the Kafka key) always land in the same partition, a dedicated worker ensures they are processed sequentially.
 * **Resilience:** If the processing server is down, messages stay in Kafka. Once back online, the Consumer picks up exactly where it left off.
 
+<img width="1920" height="1080" alt="Screenshot from 2026-01-21 18-17-47" src="https://github.com/user-attachments/assets/53593474-ca38-4df0-8de3-7371ec099109" />
+
 
