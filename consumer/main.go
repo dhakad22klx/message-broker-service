@@ -48,8 +48,8 @@ func main() {
 				break
 			}
 			
-			log.Printf("⚠️ Retry %d/%d for user %s in 5s...", i+1, maxRetries, string(m.Key))
-			time.Sleep(5 * time.Second)
+			log.Printf("Retry %d/%d for user %s in 5s...", i+1, maxRetries, string(m.Key))
+			time.Sleep(20 * time.Second)
 		}
 
 		// 4. Commit or Discard
