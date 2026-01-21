@@ -35,8 +35,8 @@ func main() {
 	defer kafkaWriter.Close()
 
 	http.HandleFunc("/webhook", handleWebhook)
-	// log.Println("Producer running on :8080")
-	// log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Producer running on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handleWebhook(w http.ResponseWriter, r *http.Request) {
@@ -59,19 +59,19 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	resp, err := client.Post(os.Getenv("FASTAPI_URL"), "application/json", bytes.NewBuffer(payload))
 
 	if err == nil && resp.StatusCode == http.StatusOK {
-		// log.Println("Directly processed via FastAPI")
+		log.Println("Directly processed via FastAPI")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	// 3. Store in Kafka if FastAPI is down
-	// log.Printf("FastAPI down, queuing message for %s", userID)
+	log.Printf("FastAPI down, queuing message for %s", userID)
 	err = kafkaWriter.WriteMessages(context.Background(), kafka.Message{
 		Key:   []byte(userID),
 		Value: payload,
 	})
 	if err != nil {
-		// log.Printf("Kafka Error: %v", err)
+		log.Printf("Kafka Error: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
