@@ -65,7 +65,7 @@ func main() {
 
 	http.HandleFunc("/webhook", handleWebhook)
 
-	log.Println("🚀 Producer running on :8080")
+	log.Println("Producer running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -74,7 +74,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		verifyToken := os.Getenv("VERIFY_TOKEN")
 		if r.URL.Query().Get("hub.verify_token") == verifyToken {
-			log.Println("✅ Webhook verified by Meta")
+			log.Println("Webhook verified by Meta")
 			w.Write([]byte(r.URL.Query().Get("hub.challenge")))
 			return
 		}
@@ -85,7 +85,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	// 2. Read RAW Body (This keeps the COMPLETE JSON)
 	rawBody, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("❌ Error reading request body: %v", err)
+		log.Printf("Error reading request body: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -108,24 +108,24 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	log.Printf("📥 Incoming Webhook from %s (%s)", userName, userID)
+	log.Printf("Incoming Webhook from %s (%s)", userName, userID)
 
 	// 4. Try sending COMPLETE raw JSON to FastAPI
 	if forwardToFastAPI(rawBody) {
-		log.Printf("🏁 Success: Full payload sent to FastAPI for %s", userID)
+		log.Printf("Success: Full payload sent to FastAPI for %s", userID)
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	// 5. Fallback: Save COMPLETE raw JSON to Kafka
-	log.Printf("🛰️ Fallback: FastAPI down. Queuing full payload in Kafka for %s", userID)
+	log.Printf("Fallback: FastAPI down. Queuing full payload in Kafka for %s", userID)
 	err = kafkaWriter.WriteMessages(context.Background(), kafka.Message{
 		Key:   []byte(userID),
 		Value: rawBody, // This sends the 100% original JSON bytes
 	})
 
 	if err != nil {
-		log.Printf("❌ Kafka Error: %v", err)
+		log.Printf("Kafka Error: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -144,13 +144,13 @@ func forwardToFastAPI(payload []byte) bool {
 	resp, err := client.Post(apiURL, "application/json", bytes.NewBuffer(payload))
 
 	if err != nil {
-		log.Printf("⚠️ FastAPI Connection Error: %v", err)
+		log.Printf("FastAPI Connection Error: %v", err)
 		return false
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("⚠️ FastAPI returned non-200 status: %d", resp.StatusCode)
+		log.Printf("FastAPI returned non-200 status: %d", resp.StatusCode)
 		return false
 	}
 
