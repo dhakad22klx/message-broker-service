@@ -1,3 +1,8 @@
+#producer server
 broker.dsquare.site {
     reverse_proxy producer:8080
+}
+#kafka monitoring URL
+monitor-kafka.dsquare.site {
+    reverse_proxy kafka-ui:8080
 }

@@ -39,7 +39,16 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
     restart: always
-
+  kafka-ui:
+    image: kafbat/kafka-ui:latest
+    container_name: kafka-ui
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=production
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      # Optional: Enable message content viewing
+      - KAFKA_CLUSTERS_0_METRICS_PORT=9997 
+      - DYNAMIC_CONFIG_ENABLED=true
+    restart: always
   producer:
     build: ./producer
     container_name: whatsapp-msg-producer
